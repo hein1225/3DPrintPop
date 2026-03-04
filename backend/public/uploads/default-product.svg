@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <!-- 背景 -->
+  <rect width="800" height="600" fill="#f5f5f5"/>
+  
+  <!-- 3D打印图标 -->
+  <g transform="translate(400, 300)">
+    <!-- 打印机底座 -->
+    <rect x="-100" y="50" width="200" height="100" rx="10" fill="#3498db"/>
+    
+    <!-- 打印机顶部 -->
+    <rect x="-120" y="-100" width="240" height="150" rx="10" fill="#2980b9"/>
+    
+    <!-- 打印平台 -->
+    <rect x="-80" y="50" width="160" height="10" fill="#7f8c8d"/>
+    
+    <!-- 3D模型 -->
+    <g transform="translate(0, 30)">
+      <!-- 立方体 -->
+      <polygon points="-40,-40, 40,-40, 40,40, -40,40" fill="#e74c3c" opacity="0.8"/>
+      <polygon points="-40,-40, 0,-60, 40,-40" fill="#c0392b" opacity="0.8"/>
+      <polygon points="40,-40, 0,-60, 40,40" fill="#c0392b" opacity="0.8"/>
+      <polygon points="40,40, 0,60, -40,40" fill="#c0392b" opacity="0.8"/>
+      <polygon points="-40,40, 0,60, -40,-40" fill="#c0392b" opacity="0.8"/>
+    </g>
+    
+    <!-- 打印机喷嘴 -->
+    <rect x="-5" y="-10" width="10" height="20" fill="#34495e"/>
+    <circle cx="0" cy="-15" r="5" fill="#e74c3c"/>
+    
+    <!-- 指示灯 -->
+    <circle cx="80" cy="-50" r="10" fill="#2ecc71"/>
+  </g>
+  
+  <!-- 文字 -->
+  <text x="400" y="550" font-family="Arial, sans-serif" font-size="30" font-weight="bold" fill="#333" text-anchor="middle">
+    3D打印商品
+  </text>
+</svg>
