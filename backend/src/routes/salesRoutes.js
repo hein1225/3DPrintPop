@@ -12,4 +12,7 @@ router.get('/statistics', verifyToken, salesController.getSalesStatistics);
 // 获取商品销售记录（需要认证）
 router.get('/product/:productId', verifyToken, salesController.getProductSales);
 
+// 获取所有销售记录（需要认证）
+router.get('/all', verifyToken, salesController.getAllSales);
+
 module.exports = router;

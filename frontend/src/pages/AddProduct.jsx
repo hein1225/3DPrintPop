@@ -8,6 +8,7 @@ function AddProduct() {
   const [materials, setMaterials] = useState([{ materialId: '', weight: '' }]);
   const [printTime, setPrintTime] = useState('');
   const [sellingPrice, setSellingPrice] = useState('');
+  const [showOnHome, setShowOnHome] = useState(true);
   const [availableMaterials, setAvailableMaterials] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -101,6 +102,7 @@ function AddProduct() {
       formData.append('image', image);
       formData.append('printTime', printTime);
       formData.append('sellingPrice', sellingPrice);
+      formData.append('showOnHome', showOnHome);
       formData.append('materials', JSON.stringify(
         materials.map(m => ({
           materialId: m.materialId,
@@ -223,6 +225,20 @@ function AddProduct() {
               onChange={(e) => setSellingPrice(e.target.value)}
               required
             />
+          </div>
+
+          {/* 在首页显示 */}
+          <div className="form-group">
+            <label htmlFor="showOnHome">在首页显示</label>
+            <label className="switch">
+              <input 
+                type="checkbox" 
+                id="showOnHome"
+                checked={showOnHome} 
+                onChange={(e) => setShowOnHome(e.target.checked)}
+              />
+              <span className="slider round"></span>
+            </label>
           </div>
 
           {/* 提交按钮 */}

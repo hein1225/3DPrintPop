@@ -8,6 +8,7 @@ import EditProduct from './pages/EditProduct'
 import Settings from './pages/Settings'
 import MaterialUsage from './pages/MaterialUsage'
 import CostCalculator from './pages/CostCalculator'
+import SalesRecords from './pages/SalesRecords'
 import { AuthProvider } from './contexts/AuthContext'
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
           <Route path="/admin/settings" element={<Settings />} />
           <Route path="/admin/material-usage" element={<MaterialUsage />} />
           <Route path="/admin/cost-calculator" element={<CostCalculator />} />
+          <Route path="/admin/sales-records" element={<SalesRecords />} />
         </Routes>
       </Router>
     </AuthProvider>

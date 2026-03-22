@@ -89,14 +89,15 @@ async function addProduct(req, res) {
     const imageUrl = `/uploads/${filename}`;
     logger.info('图片压缩并保存成功', { filename, imageUrl });
 
-    // 创建商品，默认添加1个库存
-    productModel.createProduct(name, imageUrl, 1, (err, productId) => {
+    const showOnHome = req.body.showOnHome === 'false' ? 0 : 1;
+    // 创建商品
+    productModel.createProduct(name, imageUrl, showOnHome, (err, productId) => {
       if (err) {
-        logger.error('创建商品失败', { name, imageUrl, error: err.message });
+        logger.error('创建商品失败', { name, imageUrl, showOnHome, error: err.message });
         imageService.deleteImage(filePath);
         return res.status(500).json({ message: '创建商品失败' });
       }
-      logger.info('商品创建成功', { productId, name, imageUrl, quantity: 1 });
+      logger.info('商品创建成功', { productId, name, imageUrl, showOnHome });
 
       // 获取设置
       settingsModel.getAllSettings((err, settings) => {
@@ -194,8 +195,8 @@ async function addProduct(req, res) {
 async function updateProduct(req, res) {
   try {
     const { id } = req.params;
-    const { name, materials, printTime, sellingPrice } = req.body;
-    const file = req.file;
+  const { name, materials, printTime, sellingPrice, showOnHome } = req.body;
+  const file = req.file;
 
     // 检查商品是否存在
     productModel.getProductById(id, (err, product) => {
@@ -231,8 +232,10 @@ async function updateProduct(req, res) {
       }
 
       function updateProductData() {
+        // 处理showOnHome参数
+        const showOnHomeValue = showOnHome === 'false' ? 0 : 1;
         // 更新商品基本信息
-        productModel.updateProduct(id, name, imageUrl, (err) => {
+        productModel.updateProduct(id, name, imageUrl, showOnHomeValue, (err) => {
           if (err) {
             logger.error('更新商品信息失败', { error: err.message });
             // 如果有新图片，删除它
@@ -448,61 +451,44 @@ function updateProductPrice(req, res) {
 // 售出一件商品
 function sellOneProduct(req, res) {
   const { id } = req.params;
+  const { sellingPrice } = req.body;
 
-  productModel.decrementProductQuantity(id, 1, (err) => {
-    if (err) {
-      return res.status(500).json({ message: '售出商品失败' });
-    }
+  // 验证销售价格
+  if (!sellingPrice || isNaN(sellingPrice) || parseFloat(sellingPrice) <= 0) {
+    return res.status(400).json({ message: '无效的销售价格' });
+  }
 
-    // 获取当前售价
-    db.get('SELECT selling_price FROM pricing WHERE product_id = ?', [id], (err, row) => {
+  // 记录销售
+  db.run(
+    'INSERT INTO sales (product_id, quantity, total_amount) VALUES (?, ?, ?)',
+    [id, 1, parseFloat(sellingPrice)],
+    (err) => {
       if (err) {
-        return res.status(500).json({ message: '获取售价失败' });
+        return res.status(500).json({ message: '记录销售失败' });
       }
-      if (!row) {
-        return res.status(404).json({ message: '商品定价信息不存在' });
-      }
-
-      // 记录销售
-      db.run(
-        'INSERT INTO sales (product_id, quantity, total_amount) VALUES (?, ?, ?)',
-        [id, 1, row.selling_price],
-        (err) => {
-          if (err) {
-            return res.status(500).json({ message: '记录销售失败' });
-          }
-          res.json({ message: '商品售出成功' });
-        }
-      );
-    });
-  });
+      res.json({ message: '商品售出成功' });
+    }
+  );
 }
 
-// 补货商品
-function restockProduct(req, res) {
-  try {
-    logger.info('开始补货商品', { params: req.params, body: req.body });
-    const { id } = req.params;
-    const { quantity } = req.body;
-    const parsedQuantity = parseInt(quantity);
-    
-    if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
-      logger.error('补货失败：无效的数量', { id, quantity });
-      return res.status(400).json({ message: '无效的补货数量' });
-    }
 
-    productModel.incrementProductQuantity(id, parsedQuantity, (err) => {
-      if (err) {
-        logger.error('补货失败', { id, quantity, error: err.message });
-        return res.status(500).json({ message: '补货失败' });
-      }
-      logger.info('补货成功', { id, quantity });
-      res.json({ message: '补货成功' });
-    });
-  } catch (error) {
-    logger.error('补货过程中发生错误', { error: error.message, stack: error.stack });
-    res.status(500).json({ message: '补货失败' });
-  }
+
+// 更新商品显示状态
+function updateProductShowStatus(req, res) {
+  const { id } = req.params;
+  const { showOnHome } = req.body;
+  const showOnHomeValue = showOnHome ? 1 : 0;
+
+  logger.info('开始更新商品显示状态', { productId: id, showOnHome, showOnHomeValue });
+
+  productModel.updateProductShowStatus(id, showOnHomeValue, (err) => {
+    if (err) {
+      logger.error('更新商品显示状态失败', { productId: id, error: err.message });
+      return res.status(500).json({ message: '更新商品显示状态失败', error: err.message });
+    }
+    logger.info('商品显示状态更新成功', { productId: id, showOnHomeValue });
+    res.json({ message: '商品显示状态更新成功' });
+  });
 }
 
 module.exports = {
@@ -514,5 +500,5 @@ module.exports = {
   deleteProduct,
   updateProductPrice,
   sellOneProduct,
-  restockProduct
+  updateProductShowStatus
 };

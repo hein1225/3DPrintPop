@@ -1,9 +1,10 @@
 function ProductCard({ product, isRecommended, isSpecial, onSell }) {
   // 直接在onClick中实现确认框，确保逻辑正确
   const handleSell = () => {
-    // 使用confirm确认对话框
-    if (window.confirm(`确认要售出一件"${product.name}"吗？`)) {
-      onSell(product.id);
+    // 让用户输入销售价格
+    const sellingPrice = prompt(`请输入"${product.name}"的销售价格：`, product.selling_price || '');
+    if (sellingPrice && !isNaN(sellingPrice) && parseFloat(sellingPrice) > 0) {
+      onSell(product.id, parseFloat(sellingPrice));
     }
   };
 
@@ -17,12 +18,10 @@ function ProductCard({ product, isRecommended, isSpecial, onSell }) {
         <h3>{product.name}</h3>
         <div className="price-and-stock">
           <p className="price">¥{product.selling_price?.toFixed(2) || '价格待定'}</p>
-          <p className="quantity">库存: {product.quantity || 0}</p>
         </div>
         <button 
           onClick={handleSell} 
           className="sell-button"
-          disabled={!product.quantity || product.quantity <= 0}
           type="button"
         >
           售出一件

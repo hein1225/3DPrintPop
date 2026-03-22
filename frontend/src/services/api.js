@@ -60,14 +60,15 @@ export const productAPI = {
   }),
   deleteProduct: id => api.delete(`/products/${id}`),
   updateProductPrice: (id, sellingPrice) => api.patch(`/products/${id}/price`, { sellingPrice }),
-  sellOneProduct: id => api.post(`/products/${id}/sell`),
-  restockProduct: (id, quantity) => api.patch(`/products/${id}/restock`, { quantity })
+  sellOneProduct: (id, sellingPrice) => api.post(`/products/${id}/sell`, { sellingPrice }),
+  updateProductShowStatus: (id, showOnHome) => api.patch(`/products/${id}/show-status`, { showOnHome })
 };
 
 // 销售相关API
 export const salesAPI = {
   addSale: (productId, quantity, totalAmount) => api.post('/sales', { productId, quantity, totalAmount }),
-  getSalesStatistics: () => api.get('/sales/statistics')
+  getSalesStatistics: () => api.get('/sales/statistics'),
+  getAllSales: () => api.get('/sales/all')
 };
 
 // 耗材相关API

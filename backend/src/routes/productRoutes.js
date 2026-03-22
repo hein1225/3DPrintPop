@@ -24,7 +24,7 @@ router.patch('/:id/price', verifyToken, productController.updateProductPrice);
 // 售出一件商品
 router.post('/:id/sell', productController.sellOneProduct);
 
-// 补货商品（需要认证）
-router.patch('/:id/restock', verifyToken, productController.restockProduct);
+// 更新商品显示状态（需要认证）
+router.patch('/:id/show-status', verifyToken, productController.updateProductShowStatus);
 
 module.exports = router;

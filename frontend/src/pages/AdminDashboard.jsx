@@ -78,6 +78,7 @@ function AdminDashboard() {
       <div className="admin-nav">
         <Link to="/admin/add-product" className="button">添加商品</Link>
         <Link to="/admin/manage-products" className="button">管理商品</Link>
+        <Link to="/admin/sales-records" className="button">销售记录</Link>
         <Link to="/admin/material-usage" className="button">耗材使用统计</Link>
         <Link to="/admin/cost-calculator" className="button">成本计算器</Link>
         <Link to="/admin/settings" className="button">设置</Link>

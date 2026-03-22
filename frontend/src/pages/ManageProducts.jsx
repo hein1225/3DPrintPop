@@ -6,11 +6,7 @@ function ManageProducts() {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [productDetails, setProductDetails] = useState(null);
-  const [sellingPrice, setSellingPrice] = useState('');
-  const [restockQuantity, setRestockQuantity] = useState('1');
   const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-  const [restocking, setRestocking] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -34,7 +30,6 @@ function ManageProducts() {
     try {
       const response = await productAPI.getProductDetails(productId);
       setProductDetails(response.data);
-      setSellingPrice(response.data.pricing.selling_price);
     } catch (error) {
       console.error('获取商品详情失败:', error);
     }
@@ -50,31 +45,10 @@ function ManageProducts() {
   const cancelSelectProduct = () => {
     setSelectedProduct(null);
     setProductDetails(null);
-    setSellingPrice('');
     setError('');
   };
 
-  // 更新商品售价
-  const handleUpdatePrice = async () => {
-    if (!sellingPrice || isNaN(sellingPrice) || parseFloat(sellingPrice) <= 0) {
-      setError('请输入有效的售价');
-      return;
-    }
 
-    setUpdating(true);
-    setError('');
-
-    try {
-      await productAPI.updateProductPrice(selectedProduct.id, parseFloat(sellingPrice));
-      // 重新获取商品详情
-      await fetchProductDetails(selectedProduct.id);
-    } catch (error) {
-      console.error('更新售价失败:', error);
-      setError(error.response?.data?.message || '更新售价失败');
-    } finally {
-      setUpdating(false);
-    }
-  };
 
   // 删除商品
   const handleDeleteProduct = async () => {
@@ -94,43 +68,28 @@ function ManageProducts() {
     }
   };
 
-  // 补货商品
-  const handleRestockProduct = async () => {
-    if (!restockQuantity || isNaN(restockQuantity) || parseInt(restockQuantity) <= 0) {
-      setError('请输入有效的补货数量');
-      return;
-    }
 
-    setRestocking(true);
-    setError('');
 
+
+
+  // 切换商品显示状态
+  const handleToggleShowStatus = async (checked) => {
     try {
-      await productAPI.restockProduct(selectedProduct.id, parseInt(restockQuantity));
-      // 重新获取所有商品，更新数量
+      await productAPI.updateProductShowStatus(selectedProduct.id, checked);
+      // 重新获取所有商品，更新显示状态
       const response = await productAPI.getAllProducts();
       setProducts(response.data);
       // 重新获取商品详情
-      await fetchProductDetails(selectedProduct.id);
-      // 重置补货数量
-      setRestockQuantity('1');
+      const productDetailResponse = await productAPI.getProductDetails(selectedProduct.id);
+      setProductDetails(productDetailResponse.data);
+      // 更新selectedProduct状态，确保开关控件即时显示更改后的状态
+      const updatedProduct = productDetailResponse.data.product;
+      if (updatedProduct) {
+        setSelectedProduct(updatedProduct);
+      }
     } catch (error) {
-      console.error('补货失败:', error);
-      setError(error.response?.data?.message || '补货失败');
-    } finally {
-      setRestocking(false);
-    }
-  };
-
-  // 记录销售
-  const handleRecordSale = async () => {
-    if (!productDetails) return;
-
-    try {
-      await salesAPI.addSale(selectedProduct.id, 1, parseFloat(sellingPrice));
-      alert('销售记录添加成功');
-    } catch (error) {
-      console.error('添加销售记录失败:', error);
-      setError(error.response?.data?.message || '添加销售记录失败');
+      console.error('更新商品显示状态失败:', error);
+      setError(error.response?.data?.message || '更新商品显示状态失败');
     }
   };
 
@@ -169,25 +128,15 @@ function ManageProducts() {
                   <span>{selectedProduct.name}</span>
                 </div>
                 <div className="info-item">
-                  <span className="label">库存数量:</span>
-                  <span>{selectedProduct.quantity || 0}</span>
-                </div>
-                
-                {/* 补货功能 */}
-                <h3>补货管理</h3>
-                <div className="restock-section">
-                  <div className="price-input">
-                    <input
-                      type="number"
-                      min="1"
-                      value={restockQuantity}
-                      onChange={(e) => setRestockQuantity(e.target.value)}
-                      placeholder="输入补货数量"
+                  <span className="label">在首页显示:</span>
+                  <label className="switch">
+                    <input 
+                      type="checkbox" 
+                      checked={selectedProduct.show_on_home === 1} 
+                      onChange={(e) => handleToggleShowStatus(e.target.checked)}
                     />
-                    <button onClick={handleRestockProduct} disabled={restocking}>
-                      {restocking ? '补货中...' : '补货'}
-                    </button>
-                  </div>
+                    <span className="slider round"></span>
+                  </label>
                 </div>
                 
                 {/* 打印详情 */}
@@ -222,31 +171,13 @@ function ManageProducts() {
                   </>
                 )}
 
-                {/* 定价信息 */}
+                {/* 成本信息 */}
                 {productDetails?.pricing && (
                   <>
-                    <h3>定价信息</h3>
+                    <h3>成本信息</h3>
                     <div className="info-item">
                       <span className="label">成本价:</span>
                       <span>¥{productDetails.pricing.cost_price.toFixed(2)}</span>
-                    </div>
-                    <div className="info-item">
-                      <span className="label">售价:</span>
-                      <div className="price-input">
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={sellingPrice}
-                          onChange={(e) => setSellingPrice(e.target.value)}
-                        />
-                        <button onClick={handleUpdatePrice} disabled={updating}>
-                          {updating ? '更新中...' : '更新售价'}
-                        </button>
-                      </div>
-                    </div>
-                    <div className="info-item">
-                      <span className="label">利润:</span>
-                      <span>¥{(parseFloat(sellingPrice) - productDetails.pricing.cost_price).toFixed(2)}</span>
                     </div>
                   </>
                 )}
@@ -255,7 +186,6 @@ function ManageProducts() {
 
             {/* 操作按钮 */}
             <div className="product-actions">
-              <button onClick={handleRecordSale} className="button">记录销售</button>
               <button onClick={() => navigate(`/admin/edit-product/${selectedProduct.id}`)} className="button">编辑商品</button>
               <button onClick={handleDeleteProduct} className="button button-danger">删除商品</button>
               <button onClick={cancelSelectProduct} className="button">取消</button>
@@ -279,7 +209,6 @@ function ManageProducts() {
                   >
                     <div className="product-item-info">
                       <h3>{product.name}</h3>
-                      <p className="product-stock">库存: {product.quantity || 0}</p>
                     </div>
                   </div>
                 ))

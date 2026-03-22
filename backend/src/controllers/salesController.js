@@ -34,8 +34,19 @@ function getProductSales(req, res) {
   });
 }
 
+// 获取所有销售记录
+function getAllSales(req, res) {
+  salesModel.getAllSales((err, sales) => {
+    if (err) {
+      return res.status(500).json({ message: '获取销售记录失败' });
+    }
+    res.json(sales);
+  });
+}
+
 module.exports = {
   addSale,
   getSalesStatistics,
-  getProductSales
+  getProductSales,
+  getAllSales
 };

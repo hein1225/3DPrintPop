@@ -74,15 +74,15 @@ function Home() {
     fetchRecommendationsAndSettings();
   }, [passwordVerified]);
 
-  // 过滤搜索结果
+  // 过滤搜索结果，只显示在首页显示的商品
   const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) && product.show_on_home === 1
   );
 
   // 处理售出一件商品
-  const handleSellOne = async (productId) => {
+  const handleSellOne = async (productId, sellingPrice) => {
     try {
-      await productAPI.sellOneProduct(productId);
+      await productAPI.sellOneProduct(productId, sellingPrice);
       // 更新商品列表
       const response = await productAPI.getAllProducts();
       setProducts(response.data);

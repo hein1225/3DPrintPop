@@ -35,7 +35,7 @@ function getPasswordHash(callback) {
 
 // 更新管理员密码
 function updatePassword(password, callback) {
-  const sql = 'UPDATE admin SET password_hash = ? WHERE id = 1';
+  const sql = 'UPDATE admin SET password_hash = ?';
   db.run(sql, [password], (err) => {
     if (err) {
       return callback(err);

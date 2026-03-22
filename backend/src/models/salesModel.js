@@ -82,8 +82,26 @@ function getProductSales(productId, callback) {
   });
 }
 
+// 获取所有销售记录
+function getAllSales(callback) {
+  const sql = `
+    SELECT s.*, p.name as product_name, pr.cost_price
+    FROM sales s
+    JOIN products p ON s.product_id = p.id
+    JOIN pricing pr ON p.id = pr.product_id
+    ORDER BY s.sale_date DESC
+  `;
+  db.all(sql, (err, rows) => {
+    if (err) {
+      return callback(err);
+    }
+    callback(null, rows);
+  });
+}
+
 module.exports = {
   addSale,
   getSalesStatistics,
-  getProductSales
+  getProductSales,
+  getAllSales
 };

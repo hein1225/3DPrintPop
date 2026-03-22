@@ -16,35 +16,7 @@ function getAllProducts(callback) {
   });
 }
 
-// 增加商品数量
-function incrementProductQuantity(id, quantity, callback) {
-  const sql = `
-    UPDATE products 
-    SET quantity = quantity + ?, updated_at = CURRENT_TIMESTAMP 
-    WHERE id = ?
-  `;
-  db.run(sql, [parseInt(quantity), id], (err) => {
-    if (err) {
-      return callback(err);
-    }
-    callback(null);
-  });
-}
 
-// 减少商品数量
-function decrementProductQuantity(id, quantity, callback) {
-  const sql = `
-    UPDATE products 
-    SET quantity = quantity - ?, updated_at = CURRENT_TIMESTAMP 
-    WHERE id = ? AND quantity >= ?
-  `;
-  db.run(sql, [parseInt(quantity), id, parseInt(quantity)], (err) => {
-    if (err) {
-      return callback(err);
-    }
-    callback(null);
-  });
-}
 
 // 获取单个商品
 function getProductById(id, callback) {
@@ -58,11 +30,9 @@ function getProductById(id, callback) {
 }
 
 // 创建商品
-function createProduct(name, imageUrl, quantity, callback) {
-  // 默认添加1个库存
-  const defaultQuantity = quantity !== undefined ? quantity : 1;
-  const sql = 'INSERT INTO products (name, image_url, quantity) VALUES (?, ?, ?)';
-  db.run(sql, [name, imageUrl, defaultQuantity], function(err) {
+function createProduct(name, imageUrl, showOnHome = 1, callback) {
+  const sql = 'INSERT INTO products (name, image_url, show_on_home) VALUES (?, ?, ?)';
+  db.run(sql, [name, imageUrl, showOnHome], function(err) {
     if (err) {
       return callback(err);
     }
@@ -71,9 +41,9 @@ function createProduct(name, imageUrl, quantity, callback) {
 }
 
 // 更新商品
-function updateProduct(id, name, imageUrl, callback) {
-  const sql = 'UPDATE products SET name = ?, image_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
-  db.run(sql, [name, imageUrl, id], (err) => {
+function updateProduct(id, name, imageUrl, showOnHome, callback) {
+  const sql = 'UPDATE products SET name = ?, image_url = ?, show_on_home = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+  db.run(sql, [name, imageUrl, showOnHome, id], (err) => {
     if (err) {
       return callback(err);
     }
@@ -85,6 +55,17 @@ function updateProduct(id, name, imageUrl, callback) {
 function deleteProduct(id, callback) {
   const sql = 'DELETE FROM products WHERE id = ?';
   db.run(sql, [id], (err) => {
+    if (err) {
+      return callback(err);
+    }
+    callback(null);
+  });
+}
+
+// 更新商品显示状态
+function updateProductShowStatus(id, showOnHome, callback) {
+  const sql = 'UPDATE products SET show_on_home = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+  db.run(sql, [showOnHome, id], (err) => {
     if (err) {
       return callback(err);
     }
@@ -139,6 +120,5 @@ module.exports = {
   getProductMaterials,
   getProductPrintingDetails,
   getProductPricing,
-  incrementProductQuantity,
-  decrementProductQuantity
+  updateProductShowStatus
 };
