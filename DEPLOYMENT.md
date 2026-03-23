@@ -191,6 +191,7 @@ npm start
      -p 3000:3000 \
      -e JWT_SECRET=your-secret-key-here \
      -v app-data:/app/data \
+     -v app-uploads:/app/public/uploads \
      3dprintpop
    ```
 
@@ -241,10 +242,13 @@ docker build -t 3dprintpop https://github.com/hein1225/3DPrintPop.git
          - JWT_SECRET=your-secret-key-here
        volumes:
          - app-data:/app/data
+         - app-uploads:/app/public/uploads
        restart: unless-stopped
 
    volumes:
      app-data:
+       driver: local
+     app-uploads:
        driver: local
    ```
 
@@ -365,10 +369,13 @@ docker build -t 3dprintpop https://github.com/hein1225/3DPrintPop.git
          - JWT_SECRET=your-secret-key-here
        volumes:
          - app-data:/app/data
+         - app-uploads:/app/public/uploads
        restart: unless-stopped
 
    volumes:
      app-data:
+       driver: local
+     app-uploads:
        driver: local
    ```
 

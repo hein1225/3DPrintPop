@@ -13,8 +13,11 @@ services:
       - ELECTRICITY_PRICE=0.6
     volumes:
       - app-data:/app/data
+      - app-uploads:/app/public/uploads
     restart: unless-stopped
 
 volumes:
   app-data:
+    driver: local
+  app-uploads:
     driver: local
