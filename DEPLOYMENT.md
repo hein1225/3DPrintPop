@@ -154,6 +154,260 @@ npm start
 4. **安全性**: 在生产环境中，建议使用HTTPS和更强的安全设置
 5. **Zeabur特有**: Zeabur的文件系统是临时的，重启服务后会丢失数据，需要注意数据库备份
 
+## Docker部署指南
+
+### 1. 环境准备
+
+- **安装Docker**：确保已安装Docker和Docker Compose
+  - Windows: 下载并安装 [Docker Desktop](https://www.docker.com/products/docker-desktop)
+  - Linux: 按照官方文档安装Docker和Docker Compose
+  - Mac: 下载并安装 [Docker Desktop for Mac](https://www.docker.com/products/docker-desktop)
+
+- **验证安装**：运行以下命令检查Docker是否正常安装
+  ```bash
+  docker --version
+  docker-compose --version
+  ```
+
+### 2. 本地构建和运行
+
+#### 方法一：从本地代码构建
+
+1. **克隆项目**
+   ```bash
+   git clone https://github.com/hein1225/3DPrintPop.git
+   cd 3DPrintPop
+   ```
+
+2. **构建Docker镜像**
+   ```bash
+   docker build -t 3dprintpop .
+   ```
+
+3. **运行容器**
+   ```bash
+   docker run -d \
+     --name 3dprintpop \
+     -p 3000:3000 \
+     -e JWT_SECRET=your-secret-key-here \
+     -v app-data:/app/data \
+     3dprintpop
+   ```
+
+#### 方法二：使用Docker Compose（推荐）
+
+1. **克隆项目**
+   ```bash
+   git clone https://github.com/hein1225/3DPrintPop.git
+   cd 3DPrintPop
+   ```
+
+2. **配置环境变量**
+   - 编辑 `docker-compose.yml` 文件，修改 `JWT_SECRET` 为强密钥
+
+3. **启动服务**
+   ```bash
+   docker-compose up -d
+   ```
+
+### 3. 通过GitHub仓库地址构建Docker镜像
+
+#### Docker地址说明
+
+当使用GitHub仓库地址构建Docker镜像时，Docker会直接从GitHub仓库拉取代码并构建镜像，无需先克隆仓库。对于本项目，Docker构建地址就是GitHub仓库地址：
+
+**Docker构建地址**: `https://github.com/hein1225/3DPrintPop.git`
+
+#### 方法一：使用Docker CLI
+
+```bash
+docker build -t 3dprintpop https://github.com/hein1225/3DPrintPop.git
+```
+
+#### 方法二：使用Docker Compose
+
+1. 创建 `docker-compose.yml` 文件
+   ```yaml
+   version: '3.8'
+
+   services:
+     app:
+       build: https://github.com/hein1225/3DPrintPop.git
+       ports:
+         - "3000:3000"
+       environment:
+         - NODE_ENV=production
+         - PORT=3000
+         - JWT_SECRET=your-secret-key-here
+       volumes:
+         - app-data:/app/data
+       restart: unless-stopped
+
+   volumes:
+     app-data:
+       driver: local
+   ```
+
+2. 启动服务
+   ```bash
+   docker-compose up -d
+   ```
+
+#### 方法三：使用Docker Hub自动构建
+
+1. **登录Docker Hub**：访问 [Docker Hub](https://hub.docker.com/) 并登录您的账户
+2. **创建仓库**：点击「Create Repository」按钮，创建一个新的仓库
+3. **连接GitHub**：
+   - 在「Build Settings」部分，选择「GitHub」作为构建源
+   - 授权Docker Hub访问您的GitHub账户
+   - 选择仓库 `hein1225/3DPrintPop`
+4. **配置构建规则**：
+   - 点击「Build Rules」部分的「Add Rule」按钮
+   - 设置分支（如 `main`）和标签规则
+   - 配置构建上下文路径（默认为 `/`）
+   - 点击「Save and Build」开始构建
+5. **获取镜像地址**：
+   - 构建完成后，镜像地址格式为 `your-dockerhub-username/3dprintpop:tag`
+   - 例如：`username/3dprintpop:latest`
+6. **使用镜像**：
+   ```bash
+   docker pull your-dockerhub-username/3dprintpop:latest
+   docker run -d --name 3dprintpop -p 3000:3000 your-dockerhub-username/3dprintpop:latest
+   ```
+
+#### 方法四：使用GitHub Actions构建并推送镜像
+
+1. **创建GitHub Actions工作流**：
+   - 在项目根目录创建 `.github/workflows/docker-build.yml` 文件
+   - 内容如下：
+   ```yaml
+   name: Docker Build and Push
+
+   on:
+     push:
+       branches: [ main ]
+     pull_request:
+       branches: [ main ]
+
+   jobs:
+     build:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v3
+         
+         - name: Login to Docker Hub
+           uses: docker/login-action@v2
+           with:
+             username: ${{ secrets.DOCKERHUB_USERNAME }}
+             password: ${{ secrets.DOCKERHUB_TOKEN }}
+         
+         - name: Build and push
+           uses: docker/build-push-action@v4
+           with:
+             context: .
+             push: true
+             tags: your-dockerhub-username/3dprintpop:latest
+   ```
+
+2. **配置Docker Hub凭证**：
+   - 在GitHub仓库的「Settings」→「Secrets and variables」→「Actions」中添加以下 secrets：
+     - `DOCKERHUB_USERNAME`：您的Docker Hub用户名
+     - `DOCKERHUB_TOKEN`：您的Docker Hub访问令牌（在Docker Hub的「Account Settings」→「Security」中生成）
+
+3. **触发构建**：
+   - 推送代码到 `main` 分支或创建Pull Request
+   - GitHub Actions会自动构建镜像并推送到Docker Hub
+
+4. **获取镜像地址**：
+   - 构建完成后，镜像地址格式为 `your-dockerhub-username/3dprintpop:latest`
+
+5. **使用镜像**：
+   ```bash
+   docker pull your-dockerhub-username/3dprintpop:latest
+   docker run -d --name 3dprintpop -p 3000:3000 your-dockerhub-username/3dprintpop:latest
+   ```
+
+### 4. 关联镜像地址
+
+**镜像地址格式**：
+- Docker Hub镜像地址：`docker.io/your-dockerhub-username/3dprintpop:tag`
+- 例如：`docker.io/username/3dprintpop:latest`
+
+**如何使用镜像地址**：
+
+1. **直接运行容器**：
+   ```bash
+   docker run -d --name 3dprintpop -p 3000:3000 docker.io/your-dockerhub-username/3dprintpop:latest
+   ```
+
+2. **在docker-compose.yml中使用**：
+   ```yaml
+   version: '3.8'
+
+   services:
+     app:
+       image: docker.io/your-dockerhub-username/3dprintpop:latest
+       ports:
+         - "3000:3000"
+       environment:
+         - NODE_ENV=production
+         - PORT=3000
+         - JWT_SECRET=your-secret-key-here
+       volumes:
+         - app-data:/app/data
+       restart: unless-stopped
+
+   volumes:
+     app-data:
+       driver: local
+   ```
+
+3. **在其他容器平台使用**：
+   - 可以将镜像地址复制到Kubernetes、Docker Swarm等容器平台中使用
+
+### 4. 访问应用
+
+- **访问地址**: http://localhost:3000
+- **功能**: 应用已完全部署，包含前端和后端服务
+
+### 5. Docker部署注意事项
+
+1. **环境变量**
+   - 生产环境中必须修改 `JWT_SECRET` 为强密钥
+   - 可根据需要调整 `HOURLY_POWER_CONSUMPTION` 和 `ELECTRICITY_PRICE` 环境变量
+
+2. **数据持久化**
+   - 使用Docker卷 `app-data` 持久化SQLite数据库文件
+   - 定期备份卷数据，确保数据安全
+
+3. **容器管理**
+   - 查看容器状态：`docker ps`
+   - 查看日志：`docker logs 3dprintpop`
+   - 停止容器：`docker stop 3dprintpop`
+   - 启动容器：`docker start 3dprintpop`
+   - 重启容器：`docker restart 3dprintpop`
+
+4. **更新应用**
+   - 拉取最新代码：`git pull`
+   - 重新构建镜像：`docker build -t 3dprintpop .`
+   - 重启容器：`docker-compose up -d --build`
+
+### 6. 常见问题
+
+#### Docker构建失败
+- 检查网络连接是否正常
+- 确保Docker守护进程正在运行
+- 查看构建日志，定位具体错误
+
+#### 容器启动失败
+- 检查端口是否被占用
+- 查看容器日志：`docker logs 3dprintpop`
+- 检查环境变量配置是否正确
+
+#### 数据库连接失败
+- 确保卷挂载正确：`docker volume inspect app-data`
+- 检查容器内数据目录权限
+
 ## 常见问题
 
 ### 端口被占用
@@ -190,6 +444,9 @@ npm start
 │   ├── .env              # 环境变量配置
 │   ├── server.js         # 后端入口文件
 │   └── package.json      # 后端依赖
+├── Dockerfile            # Docker构建文件
+├── docker-compose.yml    # Docker Compose配置文件
+├── .dockerignore         # Docker忽略文件
 ├── DEPLOYMENT.md         # 部署指南
 ├── README.md             # 项目说明文档
 └── .gitignore            # Git忽略配置

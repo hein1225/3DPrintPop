@@ -1,0 +1,36 @@
+# 依赖目录
+node_modules/
+
+# 构建产物
+dist/
+build/
+
+# 环境文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 日志文件
+logs/
+*.log
+
+# 数据库文件
+backend/data/
+
+# IDE文件
+.vscode/
+.idea/
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.tmp
+*.temp
+
+# Git文件
+.git/
+.gitignore
