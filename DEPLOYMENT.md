@@ -228,7 +228,7 @@ docker build -t 3dprintpop https://github.com/hein1225/3DPrintPop.git
 
 1. 创建 `docker-compose.yml` 文件
    ```yaml
-   version: '3.8'
+   version: "3.8"
 
    services:
      app:
@@ -256,20 +256,30 @@ docker build -t 3dprintpop https://github.com/hein1225/3DPrintPop.git
 #### 方法三：使用Docker Hub自动构建
 
 1. **登录Docker Hub**：访问 [Docker Hub](https://hub.docker.com/) 并登录您的账户
-2. **创建仓库**：点击「Create Repository」按钮，创建一个新的仓库
+2. **创建仓库**：
+   - 点击页面右上角的「Create Repository」按钮
+   - 填写仓库名称（如 `3dprintpop`）
+   - 选择可见性（Public或Private）
+   - 点击「Create」按钮
 3. **连接GitHub**：
-   - 在「Build Settings」部分，选择「GitHub」作为构建源
+   - 在仓库页面中，点击「Builds」标签页
+   - 点击「Link to GitHub」按钮
    - 授权Docker Hub访问您的GitHub账户
-   - 选择仓库 `hein1225/3DPrintPop`
+   - 搜索并选择仓库 `hein1225/3DPrintPop`
+   - 点击「Save」按钮
 4. **配置构建规则**：
-   - 点击「Build Rules」部分的「Add Rule」按钮
+   - 在「Builds」页面中，点击「Configure Automated Builds」按钮
+   - 点击「+ Add Rule」按钮
    - 设置分支（如 `main`）和标签规则
    - 配置构建上下文路径（默认为 `/`）
-   - 点击「Save and Build」开始构建
-5. **获取镜像地址**：
+   - 点击「Save Changes」按钮
+5. **触发构建**：
+   - 配置完成后，点击「Trigger Build」按钮开始构建
+   - 或等待代码推送到GitHub时自动触发构建
+6. **获取镜像地址**：
    - 构建完成后，镜像地址格式为 `your-dockerhub-username/3dprintpop:tag`
    - 例如：`username/3dprintpop:latest`
-6. **使用镜像**：
+7. **使用镜像**：
    ```bash
    docker pull your-dockerhub-username/3dprintpop:latest
    docker run -d --name 3dprintpop -p 3000:3000 your-dockerhub-username/3dprintpop:latest
@@ -342,7 +352,7 @@ docker build -t 3dprintpop https://github.com/hein1225/3DPrintPop.git
 
 2. **在docker-compose.yml中使用**：
    ```yaml
-   version: '3.8'
+   version: "3.8"
 
    services:
      app:

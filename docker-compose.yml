@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   app:
@@ -8,11 +8,11 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - JWT_SECRET=your-secret-key-here  # 生产环境请修改为强密钥
+      - JWT_SECRET=your-secret-key-here
       - HOURLY_POWER_CONSUMPTION=0.5
       - ELECTRICITY_PRICE=0.6
     volumes:
-      - app-data:/app/data  # 持久化数据库文件
+      - app-data:/app/data
     restart: unless-stopped
 
 volumes:

@@ -13,8 +13,8 @@ RUN npm install
 # 复制前端源代码
 COPY frontend/ ./
 
-# 构建前端项目
-RUN npm run build
+# 构建前端项目（指定输出目录为dist）
+RUN npm run build -- --outDir=dist
 
 # 多阶段构建：第二阶段构建后端
 FROM node:18-alpine AS backend-builder
