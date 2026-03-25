@@ -55,13 +55,16 @@ function deleteMaterial(id, callback) {
   });
 }
 
-// 获取耗材使用总量
+// 获取耗材使用总量（基于销售记录）
 function getMaterialUsageTotal(callback) {
   const sql = `
-    SELECT m.id, SUM(pm.weight) as total_weight
+    SELECT m.id, m.color, m.type, SUM(pm.weight * s.quantity) as total_weight
     FROM product_materials pm
     JOIN materials m ON pm.material_id = m.id
+    JOIN products p ON pm.product_id = p.id
+    JOIN sales s ON p.id = s.product_id
     GROUP BY m.id
+    ORDER BY total_weight DESC
   `;
   db.all(sql, (err, rows) => {
     if (err) {
