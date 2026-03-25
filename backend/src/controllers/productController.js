@@ -74,11 +74,11 @@ function getProductDetails(req, res) {
 async function addProduct(req, res) {
   try {
     logger.info('开始添加商品', { body: req.body });
-    const { name, materials, printTime } = req.body;
+    const { name, materials, printTime, sellingPrice } = req.body;
     const file = req.file;
 
     if (!file) {
-      logger.error('添加商品失败：未提供商品图片', { name, materials, printTime });
+      logger.error('添加商品失败：未提供商品图片', { name, materials, printTime, sellingPrice });
       return res.status(400).json({ message: '未提供商品图片' });
     }
 
@@ -109,7 +109,7 @@ async function addProduct(req, res) {
         const hourlyPowerConsumption = parseFloat(settings.hourly_power_consumption) || 0.5;
         const electricityPrice = parseFloat(settings.electricity_price) || 0.6;
 
-        // 计算成本
+        // 计算成本和利润
         try {
           const { powerConsumption, electricityCost, materialCost, costPrice } = calculationService.calculateCostAndProfit(
             parseFloat(printTime),
@@ -121,7 +121,8 @@ async function addProduct(req, res) {
             electricityPrice
           );
 
-          logger.info('成本计算成功', { productId, costPrice });
+          const profit = calculationService.calculateProfit(costPrice, parseFloat(sellingPrice));
+          logger.info('成本和利润计算成功', { productId, costPrice, sellingPrice, profit });
 
           // 保存打印详情
           db.run(
@@ -133,10 +134,10 @@ async function addProduct(req, res) {
                 return res.status(500).json({ message: '保存打印详情失败' });
               }
 
-              // 保存定价信息（不包含售价和利润，这些在销售时输入）
+              // 保存定价信息
               db.run(
                 'INSERT INTO pricing (product_id, cost_price, selling_price, profit) VALUES (?, ?, ?, ?)',
-                [productId, costPrice, 0, 0],
+                [productId, costPrice, sellingPrice, profit],
                 (err) => {
                   if (err) {
                     logger.error('保存定价信息失败', { productId, error: err.message });
@@ -194,7 +195,7 @@ async function addProduct(req, res) {
 async function updateProduct(req, res) {
   try {
     const { id } = req.params;
-  const { name, materials, printTime, showOnHome } = req.body;
+  const { name, materials, printTime, sellingPrice, showOnHome } = req.body;
   const file = req.file;
 
     // 检查商品是否存在
@@ -256,7 +257,7 @@ async function updateProduct(req, res) {
             const hourlyPowerConsumption = parseFloat(settings.hourly_power_consumption) || 0.5;
             const electricityPrice = parseFloat(settings.electricity_price) || 0.6;
 
-            // 计算成本
+            // 计算成本和利润
             const { powerConsumption, electricityCost, materialCost, costPrice } = calculationService.calculateCostAndProfit(
               parseFloat(printTime),
               JSON.parse(materials).map(m => ({
@@ -266,6 +267,8 @@ async function updateProduct(req, res) {
               hourlyPowerConsumption,
               electricityPrice
             );
+
+            const profit = calculationService.calculateProfit(costPrice, parseFloat(sellingPrice));
 
             // 更新打印详情
             db.run(
@@ -277,10 +280,10 @@ async function updateProduct(req, res) {
                   return res.status(500).json({ message: '更新打印详情失败' });
                 }
 
-                // 更新定价信息（只更新成本，售价和利润保持不变）
+                // 更新定价信息
                 db.run(
-                  'UPDATE pricing SET cost_price = ? WHERE product_id = ?',
-                  [costPrice, id],
+                  'UPDATE pricing SET cost_price = ?, selling_price = ?, profit = ? WHERE product_id = ?',
+                  [costPrice, sellingPrice, profit, id],
                   (err) => {
                     if (err) {
                       logger.error('更新定价信息失败', { error: err.message });
