@@ -7,7 +7,6 @@ function AddProduct() {
   const [image, setImage] = useState(null);
   const [materials, setMaterials] = useState([{ materialId: '', weight: '' }]);
   const [printTime, setPrintTime] = useState('');
-  const [sellingPrice, setSellingPrice] = useState('');
   const [showOnHome, setShowOnHome] = useState(true);
   const [availableMaterials, setAvailableMaterials] = useState([]);
   const [error, setError] = useState('');
@@ -80,12 +79,6 @@ function AddProduct() {
       return;
     }
 
-    if (!sellingPrice || isNaN(sellingPrice) || parseFloat(sellingPrice) <= 0) {
-      setError('请输入有效的售价');
-      setLoading(false);
-      return;
-    }
-
     // 验证耗材
     for (const material of materials) {
       if (!material.materialId || !material.weight || isNaN(material.weight) || parseFloat(material.weight) <= 0) {
@@ -101,7 +94,6 @@ function AddProduct() {
       formData.append('name', name);
       formData.append('image', image);
       formData.append('printTime', printTime);
-      formData.append('sellingPrice', sellingPrice);
       formData.append('showOnHome', showOnHome);
       formData.append('materials', JSON.stringify(
         materials.map(m => ({
@@ -214,18 +206,7 @@ function AddProduct() {
             </button>
           </div>
 
-          {/* 售价 */}
-          <div className="form-group">
-            <label htmlFor="sellingPrice">售价（元）</label>
-            <input
-              type="number"
-              step="0.1"
-              id="sellingPrice"
-              value={sellingPrice}
-              onChange={(e) => setSellingPrice(e.target.value)}
-              required
-            />
-          </div>
+
 
           {/* 在首页显示 */}
           <div className="form-group">
