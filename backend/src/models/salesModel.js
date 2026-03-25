@@ -99,9 +99,39 @@ function getAllSales(callback) {
   });
 }
 
+// 删除销售记录
+function deleteSale(saleId, callback) {
+  const sql = 'DELETE FROM sales WHERE id = ?';
+  db.run(sql, [saleId], (err) => {
+    if (err) {
+      return callback(err);
+    }
+    callback(null);
+  });
+}
+
+// 批量删除销售记录
+function deleteSales(saleIds, callback) {
+  if (!saleIds || saleIds.length === 0) {
+    return callback(null);
+  }
+
+  const placeholders = saleIds.map(() => '?').join(',');
+  const sql = `DELETE FROM sales WHERE id IN (${placeholders})`;
+  
+  db.run(sql, saleIds, (err) => {
+    if (err) {
+      return callback(err);
+    }
+    callback(null);
+  });
+}
+
 module.exports = {
   addSale,
   getSalesStatistics,
   getProductSales,
-  getAllSales
+  getAllSales,
+  deleteSale,
+  deleteSales
 };

@@ -68,7 +68,9 @@ export const productAPI = {
 export const salesAPI = {
   addSale: (productId, quantity, totalAmount) => api.post('/sales', { productId, quantity, totalAmount }),
   getSalesStatistics: () => api.get('/sales/statistics'),
-  getAllSales: () => api.get('/sales/all')
+  getAllSales: () => api.get('/sales/all'),
+  deleteSale: (id) => api.delete(`/sales/${id}`),
+  deleteSales: (ids) => api.delete('/sales/batch', { data: { ids } })
 };
 
 // 耗材相关API

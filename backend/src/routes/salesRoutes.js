@@ -15,4 +15,10 @@ router.get('/product/:productId', verifyToken, salesController.getProductSales);
 // 获取所有销售记录（需要认证）
 router.get('/all', verifyToken, salesController.getAllSales);
 
+// 删除单个销售记录（需要认证）
+router.delete('/:id', verifyToken, salesController.deleteSale);
+
+// 批量删除销售记录（需要认证）
+router.delete('/batch', verifyToken, salesController.deleteSales);
+
 module.exports = router;

@@ -195,8 +195,8 @@ async function addProduct(req, res) {
 async function updateProduct(req, res) {
   try {
     const { id } = req.params;
-  const { name, materials, printTime, sellingPrice, showOnHome } = req.body;
-  const file = req.file;
+    const { name, materials, printTime, sellingPrice, showOnHome } = req.body;
+    const file = req.file;
 
     // 检查商品是否存在
     productModel.getProductById(id, (err, product) => {
@@ -215,11 +215,10 @@ async function updateProduct(req, res) {
       if (file) {
         const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, '../../public/uploads');
         const filename = `${Date.now()}_${path.extname(file.originalname)}`;
-        const filePath = uploadDir + '/' + filename;
 
         imageService.compressAndSaveImage(file, uploadDir, filename)
-          .then(filePath => {
-            newFilePath = filePath;
+          .then(savedFilePath => {
+            newFilePath = savedFilePath;
             imageUrl = `/uploads/${filename}`;
             updateProductData();
           })
@@ -322,15 +321,20 @@ async function updateProduct(req, res) {
                                 
                                 // 如果更新了图片，删除旧图片
                                 if (oldImageUrl !== imageUrl) {
-                                  const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, '../../public/uploads');
-                                  const oldFilePath = uploadDir + oldImageUrl.replace('/uploads/', '/');
-                                  imageService.deleteImage(oldFilePath)
-                                    .then(() => {
-                                      logger.info('旧图片删除成功', { oldImageUrl });
-                                    })
-                                    .catch(deleteErr => {
-                                      logger.error('删除旧图片失败', { error: deleteErr.message, oldImageUrl });
-                                    });
+                                  try {
+                                    const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, '../../public/uploads');
+                                    const oldFileName = oldImageUrl.split('/').pop();
+                                    const oldFilePath = path.join(uploadDir, oldFileName);
+                                    imageService.deleteImage(oldFilePath)
+                                      .then(() => {
+                                        logger.info('旧图片删除成功', { oldImageUrl });
+                                      })
+                                      .catch(deleteErr => {
+                                        logger.error('删除旧图片失败', { error: deleteErr.message, oldImageUrl });
+                                      });
+                                  } catch (deleteErr) {
+                                    logger.error('删除旧图片失败', { error: deleteErr.message, oldImageUrl });
+                                  }
                                 }
                                 
                                 logger.info('商品更新成功', { productId: id });
@@ -345,15 +349,20 @@ async function updateProduct(req, res) {
                           
                           // 如果更新了图片，删除旧图片
                           if (oldImageUrl !== imageUrl) {
-                            const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, '../../public/uploads');
-                            const oldFilePath = uploadDir + oldImageUrl.replace('/uploads/', '/');
-                            imageService.deleteImage(oldFilePath)
-                              .then(() => {
-                                logger.info('旧图片删除成功', { oldImageUrl });
-                              })
-                              .catch(deleteErr => {
-                                logger.error('删除旧图片失败', { error: deleteErr.message, oldImageUrl });
-                              });
+                            try {
+                              const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, '../../public/uploads');
+                              const oldFileName = oldImageUrl.split('/').pop();
+                              const oldFilePath = path.join(uploadDir, oldFileName);
+                              imageService.deleteImage(oldFilePath)
+                                .then(() => {
+                                  logger.info('旧图片删除成功', { oldImageUrl });
+                                })
+                                .catch(deleteErr => {
+                                  logger.error('删除旧图片失败', { error: deleteErr.message, oldImageUrl });
+                                });
+                            } catch (deleteErr) {
+                              logger.error('删除旧图片失败', { error: deleteErr.message, oldImageUrl });
+                            }
                           }
                           
                           logger.info('商品更新成功（无耗材）', { productId: id });

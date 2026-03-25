@@ -44,9 +44,39 @@ function getAllSales(req, res) {
   });
 }
 
+// 删除销售记录
+function deleteSale(req, res) {
+  const { id } = req.params;
+  
+  salesModel.deleteSale(id, (err) => {
+    if (err) {
+      return res.status(500).json({ message: '删除销售记录失败' });
+    }
+    res.json({ message: '销售记录删除成功' });
+  });
+}
+
+// 批量删除销售记录
+function deleteSales(req, res) {
+  const { ids } = req.body;
+  
+  if (!ids || !Array.isArray(ids)) {
+    return res.status(400).json({ message: '请提供要删除的销售记录ID列表' });
+  }
+  
+  salesModel.deleteSales(ids, (err) => {
+    if (err) {
+      return res.status(500).json({ message: '批量删除销售记录失败' });
+    }
+    res.json({ message: '销售记录批量删除成功' });
+  });
+}
+
 module.exports = {
   addSale,
   getSalesStatistics,
   getProductSales,
-  getAllSales
+  getAllSales,
+  deleteSale,
+  deleteSales
 };
