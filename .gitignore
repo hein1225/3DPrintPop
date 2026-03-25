@@ -44,10 +44,15 @@ dist-ssr
 # Backend specific
 backend/logs/
 backend/public/assets/
+backend/public/uploads/
+backend/data/
 
 # Frontend specific
 frontend/dist/
 frontend/node_modules/
+
+# Database files
+data/
 
 # Package lock files
 package-lock.json
