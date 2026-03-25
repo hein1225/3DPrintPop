@@ -46,40 +46,14 @@ function AdminDashboard() {
         </div>
       </div>
 
-      {/* 状态栏 */}
-      <div className="status-bar">
-        <div className="status-item">
-          <h4>今日销售情况</h4>
-          <div className="value">
-            {statistics.today.sales_count || 0} 笔订单
-          </div>
-        </div>
-        <div className="status-item">
-          <h4>今日获利情况</h4>
-          <div className="value">
-            ¥{statistics.today.total_amount ? statistics.today.total_amount.toFixed(2) : '0.00'}
-          </div>
-        </div>
-        <div className="status-item">
-          <h4>累计销售情况</h4>
-          <div className="value">
-            {statistics.total.sales_count || 0} 笔订单
-          </div>
-        </div>
-        <div className="status-item">
-          <h4>累计获利情况</h4>
-          <div className="value">
-            ¥{statistics.total.total_amount ? statistics.total.total_amount.toFixed(2) : '0.00'}
-          </div>
-        </div>
-      </div>
+
 
       {/* 导航栏 */}
       <div className="admin-nav">
         <Link to="/admin/add-product" className="button">添加商品</Link>
         <Link to="/admin/manage-products" className="button">管理商品</Link>
         <Link to="/admin/sales-records" className="button">销售记录</Link>
-        <Link to="/admin/material-usage" className="button">耗材使用统计</Link>
+        <Link to="/admin/material-management" className="button">耗材管理</Link>
         <Link to="/admin/cost-calculator" className="button">成本计算器</Link>
         <Link to="/admin/settings" className="button">设置</Link>
       </div>

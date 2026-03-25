@@ -4,7 +4,6 @@ import { settingsAPI, productAPI, materialAPI, authAPI } from '../services/api';
 
 function Settings() {
   const [allProducts, setAllProducts] = useState([]);
-  const [allMaterials, setAllMaterials] = useState([]);
   const [settings, setSettings] = useState({
     hourly_power_consumption: '0.5',
     electricity_price: '0.6',
@@ -17,12 +16,6 @@ function Settings() {
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [specialProducts, setSpecialProducts] = useState([]);
   const [validDate, setValidDate] = useState('');
-  const [newMaterial, setNewMaterial] = useState({
-    color: '',
-    type: '',
-    pricePerGram: ''
-  });
-  const [editingMaterial, setEditingMaterial] = useState(null);
   const [backupFiles, setBackupFiles] = useState([]);
   const [uploadedBackupFile, setUploadedBackupFile] = useState(null);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -43,10 +36,6 @@ function Settings() {
         // 获取所有商品
         const productsResponse = await productAPI.getAllProducts();
         setAllProducts(productsResponse.data);
-
-        // 获取所有耗材
-        const materialsResponse = await materialAPI.getAllMaterials();
-        setAllMaterials(materialsResponse.data);
 
         // 获取当前设置
         const settingsResponse = await settingsAPI.getAllSettings();
@@ -106,93 +95,7 @@ function Settings() {
     }
   };
 
-  // 处理添加耗材
-  const handleAddMaterial = async () => {
-    setError('');
-    setSuccessMessage('');
 
-    if (!newMaterial.color || !newMaterial.type || !newMaterial.pricePerGram) {
-      setError('请填写完整的耗材信息');
-      return;
-    }
-
-    try {
-      await materialAPI.addMaterial(newMaterial.color, newMaterial.type, parseFloat(newMaterial.pricePerGram));
-      // 重新获取耗材列表
-      const materialsResponse = await materialAPI.getAllMaterials();
-      setAllMaterials(materialsResponse.data);
-      // 清空表单
-      setNewMaterial({ color: '', type: '', pricePerGram: '' });
-      setSuccessMessage('耗材添加成功');
-    } catch (error) {
-      console.error('添加耗材失败:', error);
-      setError(error.response?.data?.message || '添加耗材失败');
-    }
-  };
-
-  // 处理编辑耗材
-  const handleEditMaterial = (material) => {
-    setEditingMaterial(material);
-    setNewMaterial({
-      color: material.color,
-      type: material.type,
-      pricePerGram: material.price_per_gram.toString()
-    });
-  };
-
-  // 处理保存编辑的耗材
-  const handleSaveMaterial = async () => {
-    setError('');
-    setSuccessMessage('');
-
-    if (!newMaterial.color || !newMaterial.type || !newMaterial.pricePerGram) {
-      setError('请填写完整的耗材信息');
-      return;
-    }
-
-    try {
-      await materialAPI.updateMaterial(
-        editingMaterial.id,
-        newMaterial.color,
-        newMaterial.type,
-        parseFloat(newMaterial.pricePerGram)
-      );
-      // 重新获取耗材列表
-      const materialsResponse = await materialAPI.getAllMaterials();
-      setAllMaterials(materialsResponse.data);
-      // 清空表单和编辑状态
-      setNewMaterial({ color: '', type: '', pricePerGram: '' });
-      setEditingMaterial(null);
-      setSuccessMessage('耗材更新成功');
-    } catch (error) {
-      console.error('更新耗材失败:', error);
-      setError(error.response?.data?.message || '更新耗材失败');
-    }
-  };
-
-  // 取消编辑
-  const handleCancelEdit = () => {
-    setNewMaterial({ color: '', type: '', pricePerGram: '' });
-    setEditingMaterial(null);
-  };
-
-  // 处理删除耗材
-  const handleDeleteMaterial = async (id) => {
-    if (!window.confirm('确定要删除这个耗材吗？')) {
-      return;
-    }
-
-    try {
-      await materialAPI.deleteMaterial(id);
-      // 重新获取耗材列表
-      const materialsResponse = await materialAPI.getAllMaterials();
-      setAllMaterials(materialsResponse.data);
-      setSuccessMessage('耗材删除成功');
-    } catch (error) {
-      console.error('删除耗材失败:', error);
-      setError(error.response?.data?.message || '删除耗材失败');
-    }
-  };
 
   // 处理修改密码
   const handleChangePassword = async () => {
@@ -488,89 +391,7 @@ function Settings() {
           <button onClick={handleSettingsUpdate} className="button">保存基本设置</button>
         </section>
 
-        {/* 耗材管理 */}
-        <section className="settings-section">
-          <h2>耗材管理</h2>
-          
-          <h3>添加耗材</h3>
-          <div className="material-form">
-            <h3>{editingMaterial ? '编辑耗材' : '添加耗材'}</h3>
-            <div className="form-row">
-              <div className="form-group">
-                <label>颜色</label>
-                <input
-                  type="text"
-                  placeholder="如：红色"
-                  value={newMaterial.color}
-                  onChange={(e) => setNewMaterial(prev => ({ ...prev, color: e.target.value }))}
-                />
-              </div>
-              <div className="form-group">
-                <label>材料类型</label>
-                <input
-                  type="text"
-                  placeholder="如：PLA"
-                  value={newMaterial.type}
-                  onChange={(e) => setNewMaterial(prev => ({ ...prev, type: e.target.value }))}
-                />
-              </div>
-              <div className="form-group">
-                <label>价格（元/克）</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder="如：0.1"
-                  value={newMaterial.pricePerGram}
-                  onChange={(e) => setNewMaterial(prev => ({ ...prev, pricePerGram: e.target.value }))}
-                />
-              </div>
-            </div>
-            {editingMaterial ? (
-              <div className="material-form-buttons">
-                <button onClick={handleSaveMaterial} className="button">保存</button>
-                <button onClick={handleCancelEdit} className="button button-secondary" style={{ marginLeft: '8px' }}>取消</button>
-              </div>
-            ) : (
-              <button onClick={handleAddMaterial} className="button">添加耗材</button>
-            )}
-          </div>
 
-          <h3>现有耗材</h3>
-          <table className="materials-table">
-            <thead>
-              <tr>
-                <th>颜色</th>
-                <th>材料类型</th>
-                <th>价格（元/克）</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allMaterials.map(material => (
-                <tr key={material.id}>
-                  <td>{material.color}</td>
-                  <td>{material.type}</td>
-                  <td>{material.price_per_gram.toFixed(2)}</td>
-                  <td>
-                    <button 
-                      onClick={() => handleEditMaterial(material)}
-                      className="button button-small"
-                      style={{ marginRight: '8px' }}
-                    >
-                      编辑
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteMaterial(material.id)}
-                      className="button button-small button-danger"
-                    >
-                      删除
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
 
         {/* 数据备份与还原 */}
         <section className="settings-section">

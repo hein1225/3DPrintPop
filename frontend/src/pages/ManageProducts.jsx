@@ -8,6 +8,10 @@ function ManageProducts() {
   const [productDetails, setProductDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showSalesForm, setShowSalesForm] = useState(false);
+  const [salesQuantity, setSalesQuantity] = useState(1);
+  const [salesPrice, setSalesPrice] = useState('');
+  const [salesMessage, setSalesMessage] = useState('');
   const navigate = useNavigate();
 
   // 获取所有商品
@@ -90,6 +94,31 @@ function ManageProducts() {
     } catch (error) {
       console.error('更新商品显示状态失败:', error);
       setError(error.response?.data?.message || '更新商品显示状态失败');
+    }
+  };
+
+  // 补录销售记录
+  const handleAddSalesRecord = async () => {
+    if (!salesQuantity || !salesPrice) {
+      setSalesMessage('请填写数量和价格');
+      return;
+    }
+
+    try {
+      const totalAmount = salesQuantity * parseFloat(salesPrice);
+      await salesAPI.addSale(selectedProduct.id, salesQuantity, totalAmount);
+      setSalesMessage('销售记录添加成功');
+      // 重置表单
+      setSalesQuantity(1);
+      setSalesPrice('');
+      // 3秒后关闭表单
+      setTimeout(() => {
+        setShowSalesForm(false);
+        setSalesMessage('');
+      }, 3000);
+    } catch (error) {
+      console.error('添加销售记录失败:', error);
+      setSalesMessage(error.response?.data?.message || '添加销售记录失败');
     }
   };
 
@@ -187,9 +216,43 @@ function ManageProducts() {
             {/* 操作按钮 */}
             <div className="product-actions">
               <button onClick={() => navigate(`/admin/edit-product/${selectedProduct.id}`)} className="button">编辑商品</button>
+              <button onClick={() => setShowSalesForm(true)} className="button">补录销售记录</button>
               <button onClick={handleDeleteProduct} className="button button-danger">删除商品</button>
               <button onClick={cancelSelectProduct} className="button">取消</button>
             </div>
+
+            {/* 补录销售记录表单 */}
+            {showSalesForm && (
+              <div className="sales-form">
+                <h3>补录销售记录</h3>
+                {salesMessage && <div className="message">{salesMessage}</div>}
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>数量</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={salesQuantity}
+                      onChange={(e) => setSalesQuantity(parseInt(e.target.value))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>销售价格（元）</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={salesPrice}
+                      onChange={(e) => setSalesPrice(e.target.value)}
+                      placeholder={productDetails?.pricing?.selling_price || '请输入销售价格'}
+                    />
+                  </div>
+                </div>
+                <div className="form-actions">
+                  <button onClick={handleAddSalesRecord} className="button">确认添加</button>
+                  <button onClick={() => setShowSalesForm(false)} className="button button-secondary">取消</button>
+                </div>
+              </div>
+            )}
 
             {error && <div className="error-message">{error}</div>}
           </div>

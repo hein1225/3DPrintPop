@@ -55,21 +55,27 @@ function deleteMaterial(id, callback) {
   });
 }
 
-// 获取耗材使用总量（基于商品库存数量）
+// 获取耗材使用总量
 function getMaterialUsageTotal(callback) {
   const sql = `
-    SELECT m.color, m.type, SUM(pm.weight * p.quantity) as total_weight
+    SELECT m.id, SUM(pm.weight) as total_weight
     FROM product_materials pm
     JOIN materials m ON pm.material_id = m.id
-    JOIN products p ON pm.product_id = p.id
-    GROUP BY m.color, m.type
-    ORDER BY total_weight DESC
+    GROUP BY m.id
   `;
   db.all(sql, (err, rows) => {
     if (err) {
+      console.error('获取耗材使用总量失败:', err);
       return callback(err);
     }
-    callback(null, rows);
+    // 将结果转换为对象，键为materialId，值为使用量
+    const usageObject = {};
+    if (rows && rows.length > 0) {
+      rows.forEach(row => {
+        usageObject[row.id] = row.total_weight || 0;
+      });
+    }
+    callback(null, usageObject);
   });
 }
 

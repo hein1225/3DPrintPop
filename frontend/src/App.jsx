@@ -6,6 +6,7 @@ import AddProduct from './pages/AddProduct'
 import ManageProducts from './pages/ManageProducts'
 import EditProduct from './pages/EditProduct'
 import Settings from './pages/Settings'
+import MaterialManagement from './pages/MaterialManagement'
 import MaterialUsage from './pages/MaterialUsage'
 import CostCalculator from './pages/CostCalculator'
 import SalesRecords from './pages/SalesRecords'
@@ -23,6 +24,7 @@ function App() {
           <Route path="/admin/manage-products" element={<ManageProducts />} />
           <Route path="/admin/edit-product/:id" element={<EditProduct />} />
           <Route path="/admin/settings" element={<Settings />} />
+          <Route path="/admin/material-management" element={<MaterialManagement />} />
           <Route path="/admin/material-usage" element={<MaterialUsage />} />
           <Route path="/admin/cost-calculator" element={<CostCalculator />} />
           <Route path="/admin/sales-records" element={<SalesRecords />} />
